@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 
 public class ContactPanel : MonoBehaviour {
@@ -16,13 +15,14 @@ public class ContactPanel : MonoBehaviour {
         personID = person;
     }
 
-    public int GetPersonID()
+    public void ContactPanelButton()
     {
-        return personID;
-    }
+        Debug.Log("You clicked on " + contactNameText.text + ". ID = " + personID);
 
-    public void ShowContactDetails()
-    {
-        Debug.Log("You clicked on " + contactNameText.text + ". ID = " + GetPersonID());
+        // change the personID for the manager to equal the ID attached to this panel
+        ContactsDBManager.manager.SetPersonID(personID);
+
+        // change the screen to View Contact
+        ContactsDBManager.manager.MenuGoTo(1);
     }
 }
