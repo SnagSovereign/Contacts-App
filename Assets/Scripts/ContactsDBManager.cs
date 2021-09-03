@@ -25,6 +25,8 @@ public class ContactsDBManager : MonoBehaviour {
 	[Header("View Contact Screen")]
 	[SerializeField] GameObject vsContent;
 	[SerializeField] TextMeshProUGUI detailText;
+	[SerializeField] TextMeshProUGUI addressText;
+	[SerializeField] GameObject spacer;
 	[SerializeField] TextMeshProUGUI nameText;
 	[SerializeField] TextMeshProUGUI nicknameText;
 	[SerializeField] GameObject companyLabel;
@@ -57,8 +59,8 @@ public class ContactsDBManager : MonoBehaviour {
 		//set manager to the instance of itself for ContactsDBManager
 		manager = this;
 
-		DisplayContactPanels();
-	}
+        DisplayContactPanels();
+    }
 
 	public void SetPersonID(int person)
     {
@@ -154,26 +156,26 @@ public class ContactsDBManager : MonoBehaviour {
 			nameText.text = DB.reader.GetString(1);
 
 			// If there is an OtherName, then display it
-			if(!string.IsNullOrEmpty(DB.reader.GetString(3)))
+			if(!string.IsNullOrWhiteSpace(DB.reader.GetString(3)))
 			{
 				nameText.text += " " + DB.reader.GetString(3);
 			}
 
 			// If there is a LastName, then display it
-			if(!string.IsNullOrEmpty(DB.reader.GetString(2)))
+			if(!string.IsNullOrWhiteSpace(DB.reader.GetString(2)))
 			{
 				nameText.text += " " + DB.reader.GetString(2);
 			}
 
 			// If there is a Nickname, then display it
-			if(!string.IsNullOrEmpty(DB.reader.GetString(4)))
+			if(!string.IsNullOrWhiteSpace(DB.reader.GetString(4)))
 			{
 				nicknameText.gameObject.SetActive(true);
 				nicknameText.text = '"' + DB.reader.GetString(4) + '"';
 			}
 
 			// If there is a company, then display it
-			if (!string.IsNullOrEmpty(DB.reader.GetString(5)))
+			if (!string.IsNullOrWhiteSpace(DB.reader.GetString(5)))
 			{
 				companyLabel.SetActive(true);
 				companyText.gameObject.SetActive(true);
@@ -181,7 +183,7 @@ public class ContactsDBManager : MonoBehaviour {
 			}
 
 			// If there is department, then display it
-			if(!string.IsNullOrEmpty(DB.reader.GetString(6)))
+			if(!string.IsNullOrWhiteSpace(DB.reader.GetString(6)))
 			{
 				departmentLabel.SetActive(true);
 				departmentText.gameObject.SetActive(true);
@@ -189,7 +191,7 @@ public class ContactsDBManager : MonoBehaviour {
 			}
 
 			// If there is a Job Title, then display it
-			if(!string.IsNullOrEmpty(DB.reader.GetString(7)))
+			if(!string.IsNullOrWhiteSpace(DB.reader.GetString(7)))
 			{
 				jobTitleLabel.SetActive(true);
 				jobTitleText.gameObject.SetActive(true);
@@ -197,7 +199,7 @@ public class ContactsDBManager : MonoBehaviour {
 			}
 
 			// If there is a DOB, then display it
-			if(!string.IsNullOrEmpty(DB.reader.GetString(8)))
+			if(!string.IsNullOrWhiteSpace(DB.reader.GetString(8)))
 			{
 				dobLabel.SetActive(true);
 				dobText.gameObject.SetActive(true);
@@ -247,6 +249,85 @@ public class ContactsDBManager : MonoBehaviour {
 		}
 
 		// Close the DB
+		DB.CloseDB();
+
+		// Run a query to select data from the 'Address' table
+		myQuery = "SELECT * FROM Address WHERE Person = " + personID + " ORDER BY ID DESC";
+		RunMyQuery(myQuery);
+		Debug.Log("My Query = " + myQuery);
+
+		// loop through all of the rows in the 'Address' table for the specific Person
+		while(DB.reader.Read())
+        {
+			// Ensure that the address label is enabled
+			addressLabel.SetActive(true);
+
+			// Instantiate a spacer underneath the address label
+			GameObject newSpacer = Instantiate(spacer, vsContent.transform);
+			newSpacer.transform.SetSiblingIndex(addressLabel.transform.GetSiblingIndex() + 1);
+			vsSpawnedObjects.Add(newSpacer);
+
+			TextMeshProUGUI newAddressText;
+
+			//if there is a Country, then display it
+			if(!string.IsNullOrWhiteSpace(DB.reader.GetString(6)))
+            {
+				newAddressText = Instantiate(addressText, vsContent.transform);
+				newAddressText.transform.SetSiblingIndex(addressLabel.transform.GetSiblingIndex() + 1);
+				newAddressText.text = DB.reader.GetString(6);
+				vsSpawnedObjects.Add(newAddressText.gameObject);
+            }
+
+			// string that will store the suburb, state and postcode
+			string suburbStatePostcode = "";
+
+			// if there is a suburb, add it to the string
+			if(!string.IsNullOrWhiteSpace(DB.reader.GetString(3)))
+            {
+				suburbStatePostcode += DB.reader.GetString(3) + " ";
+            }
+
+			// if there is a state, add it to the string
+			if(!string.IsNullOrWhiteSpace(DB.reader.GetString(4)))
+            {
+				suburbStatePostcode += DB.reader.GetString(4) + " ";
+            }
+
+			// if there is a postcode, add it to the string
+			if(!string.IsNullOrWhiteSpace(DB.reader.GetString(5)))
+            {
+				suburbStatePostcode += DB.reader.GetString(5);
+            }
+
+			// if the string containing the suburb, state, and postcode is not empty, then display it
+			if(!string.IsNullOrWhiteSpace(suburbStatePostcode))
+            {
+				newAddressText = Instantiate(addressText, vsContent.transform);
+				newAddressText.transform.SetSiblingIndex(addressLabel.transform.GetSiblingIndex() + 1);
+				newAddressText.text = suburbStatePostcode;
+				vsSpawnedObjects.Add(newAddressText.gameObject);
+            }
+
+			// if there is a Street2, then display it
+			if(!string.IsNullOrWhiteSpace(DB.reader.GetString(2)))
+            {
+				newAddressText = Instantiate(addressText, vsContent.transform);
+				newAddressText.transform.SetSiblingIndex(addressLabel.transform.GetSiblingIndex() + 1);
+				newAddressText.text = DB.reader.GetString(2);
+				vsSpawnedObjects.Add(newAddressText.gameObject);
+            }
+
+			// if there is a Street1, then display it
+			if(!string.IsNullOrWhiteSpace(DB.reader.GetString(1)))
+            {
+				newAddressText = Instantiate(addressText, vsContent.transform);
+				newAddressText.transform.SetSiblingIndex(addressLabel.transform.GetSiblingIndex() + 1);
+				newAddressText.text = DB.reader.GetString(1);
+				vsSpawnedObjects.Add(newAddressText.gameObject);
+            }
+        }
+
+		// close the DB
 		DB.CloseDB();
 	}
 

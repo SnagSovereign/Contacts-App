@@ -83,5 +83,5 @@ Material:
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _WidthHeightRadius: {r: 900, g: 1600, b: 125, a: 0}
     - _halfSize: {r: 450, g: 800, b: 0, a: 0}
-    - _r: {r: 65, g: 65, b: 0, a: 0}
-    - _rect2props: {r: 0, g: -32.500244, b: 860.9026, a: 860.9026}
+    - _r: {r: 75, g: 75, b: 0, a: 0}
+    - _rect2props: {r: 0.000061035156, g: -37.500122, b: 857.367, a: 857.367}
