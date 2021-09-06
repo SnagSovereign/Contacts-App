@@ -475,6 +475,71 @@ public class ContactsDBManager : MonoBehaviour {
 		DB.CloseDB();
     }
 
+	void AddContact()
+    {
+		// Run a query that adds a new person to the DB
+		myQuery = "INSERT INTO Person (FirstName, LastName, OtherName, Nickname, Company, Department, JobTitle, DOB) " +
+				  "VALUES ('" + firstNameInputField.text + "', '"
+							  + lastNameInputField.text + "', '"
+							  + otherNameInputField.text + "', '"
+							  + nicknameInputField.text + "', '"
+							  + companyInputField.text + "', '"
+							  + departmentInputField.text + "', '"
+							  + jobTitleInputField.text + "', '"
+							  + dobInputField.text + "');";
+		RunMyQuery(myQuery);
+
+		//close the DB
+		DB.CloseDB();
+
+		// Run a query to find the ID of the newly added Person
+		myQuery = "SELECT MAX(ID) FROM Person;";
+		RunMyQuery(myQuery);
+
+		// check that there is data in the reader
+		if (DB.reader.Read())
+		{
+			// set the personID to the ID of the newly added Person
+			personID = DB.reader.GetInt32(0);
+		}
+
+		// Close the DB
+		DB.CloseDB();
+
+		// Loop through every detail panel
+		foreach (DetailPanel panel in spawnedDetailsPanels)
+		{
+			// Run a query to insert the data into the DB
+			myQuery = "INSERT INTO Details (Contact, Type, Person) " +
+					  "VALUES ('" + panel.inputField.text + "', '" + panel.type + "', " + personID + ");";
+			RunMyQuery(myQuery);
+
+			// Close the DB
+			DB.CloseDB();
+		}
+
+		// Loop through every address panel
+		foreach (AddressPanel panel in spawnedAddressPanels)
+		{
+			// Run a query to insert the data into the DB
+			myQuery = "INSERT INTO Address (Street1, Street2, Suburb, State, PostCode, Country, Person) " +
+						  "VALUES ('" + panel.street1InputField.text + "', '"
+									  + panel.street2InputField.text + "', '"
+									  + panel.suburbInputField.text + "', '"
+									  + panel.stateInputField.text + "', '"
+									  + panel.postcodeInputField.text + "', '"
+									  + panel.countryInputField.text + "', "
+									  + personID + ");";
+			RunMyQuery(myQuery);
+
+			//Close the DB
+			DB.CloseDB();
+		}
+
+		// View the new contact
+		MenuGoTo(1);
+	}
+
 	public void SaveButton()
     {
 		// Validate the data
@@ -485,71 +550,7 @@ public class ContactsDBManager : MonoBehaviour {
         }
 		else // Add New Contact
         {
-			// Run a query that adds a new person to the DB
-			myQuery = "INSERT INTO Person (FirstName, LastName, OtherName, Nickname, Company, Department, JobTitle, DOB) " +
-					  "VALUES ('" + firstNameInputField.text + "', '"
-								  + lastNameInputField.text + "', '" 
-								  + otherNameInputField.text + "', '" 
-								  + nicknameInputField.text + "', '" 
-								  + companyInputField.text + "', '" 
-								  + departmentInputField.text + "', '" 
-								  + jobTitleInputField.text + "', '" 
-								  + dobInputField.text + "');";
-			RunMyQuery(myQuery);
-
-			//close the DB
-			DB.CloseDB();
-
-			// check that there are any details or addresses to add to the DB
-			if(spawnedDetailsPanels.Count != 0 || spawnedAddressPanels.Count != 0)
-            {
-				// Run a query to find the ID of the newly added Person
-				myQuery = "SELECT MAX(ID) FROM Person;";
-				RunMyQuery(myQuery);
-
-				// check that there is data in the reader
-				if(DB.reader.Read())
-                {
-					// set the personID to the ID of the newly added Person
-					personID = DB.reader.GetInt32(0);
-				}
-
-				// Close the DB
-				DB.CloseDB();
-
-				// Loop through every detail panel
-				foreach(DetailPanel panel in spawnedDetailsPanels)
-                {
-					// Run a query to insert the data into the DB
-					myQuery = "INSERT INTO Details (Contact, Type, Person) " +
-							  "VALUES ('" + panel.inputField.text + "', '" + panel.type + "', " + personID + ");";
-					RunMyQuery(myQuery);
-
-					// Close the DB
-					DB.CloseDB();
-                }
-
-                // Loop through every address panel
-                foreach (AddressPanel panel in spawnedAddressPanels)
-                {
-                    // Run a query to insert the data into the DB
-                    myQuery = "INSERT INTO Address (Street1, Street2, Suburb, State, PostCode, Country, Person) " +
-                              "VALUES ('" + panel.street1InputField.text + "', '"
-                                          + panel.street2InputField.text + "', '"
-                                          + panel.suburbInputField.text + "', '"
-                                          + panel.stateInputField.text + "', '"
-                                          + panel.postcodeInputField.text + "', '"
-                                          + panel.countryInputField.text + "', "
-                                          + personID + ");";
-                    RunMyQuery(myQuery);
-
-					//Close the DB
-					DB.CloseDB();
-				}
-            }
-
-			// Go back to the main screen
-			MenuGoTo(0);
+			AddContact();
 		}
     }
 
@@ -619,6 +620,7 @@ public class ContactsDBManager : MonoBehaviour {
 		// Go back to the main screen
 		MenuGoTo(0);
 	}
+
 	void ClearScreenData()
     {
 		// destroy all of the contact panels on the main screen
