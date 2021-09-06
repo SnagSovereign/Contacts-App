@@ -43,10 +43,40 @@ public class ContactsDBManager : MonoBehaviour {
 
 	// list containing instantiated objects on the view screen (vs)
 	List<GameObject> vsSpawnedObjects = new List<GameObject>();
-				
-	// edit/add contact screen
+
+	// edit/add contact screen (ea = edit/add)
 	[Header("Edit/Add Screen")]
+	[SerializeField] GameObject eaContent;
+	[SerializeField] AddressPanel editAddressPanel;
+	[SerializeField] DetailPanel editDetailPanel;
+	[SerializeField] GameObject addPhoneButton;
+	[SerializeField] GameObject addEmailButton;
+	[SerializeField] GameObject addAddressButton;
+	[SerializeField] TMP_InputField firstNameInputField;
+	[SerializeField] TMP_InputField lastNameInputField;
+	[SerializeField] TMP_InputField otherNameInputField;
+	[SerializeField] TMP_InputField nicknameInputField;
+	[SerializeField] TMP_InputField companyInputField;
+	[SerializeField] TMP_InputField departmentInputField;
+	[SerializeField] TMP_InputField jobTitleInputField;
+	[SerializeField] TMP_InputField dobInputField;
 	[SerializeField] GameObject deleteContactButton;
+
+	// list containing all of the spawned Details panels on the edit/add screen (ea)
+	[HideInInspector]
+	public List<DetailPanel> spawnedDetailsPanels = new List<DetailPanel>();
+
+	// list containing all of the spawned Address panels on the edit/add screen (ea)
+	[HideInInspector]
+	public List<AddressPanel> spawnedAddressPanels = new List<AddressPanel>();
+
+	// list that contains any individual details the user wants to delete from the DB
+	[HideInInspector]
+	public List<int> detailsToDelete = new List<int>();
+
+	// list that contains any individual addresses the user wants to delete from the DB
+	[HideInInspector]
+	public List<int> addressesToDelete = new List<int>();
 				
 	// class level variables
 	int personID = -1;
@@ -127,8 +157,10 @@ public class ContactsDBManager : MonoBehaviour {
 			case 2: // Edit Contact Screen
 				editAddScreen.SetActive(true);
 				isEditScreen = true;
-				// fill in existing contact details
-
+				// enable the delete contact button
+				deleteContactButton.SetActive(true);
+				// fill in existing contact details in the input fields
+				FillExistingDetails();
 				break;
 			case 3: // Add Contact Screen
 				editAddScreen.SetActive(true);
@@ -331,9 +363,116 @@ public class ContactsDBManager : MonoBehaviour {
 		DB.CloseDB();
 	}
 
-	public void AddButton()
+	void FillExistingDetails()
     {
-		Debug.Log("Add Button Pressed");
+		// Run a query to select all of the data from the 'Person' table
+		myQuery = "SELECT * FROM Person WHERE ID = " + personID + ";";
+		RunMyQuery(myQuery);
+		Debug.Log("My Query = " + myQuery);
+
+		// check that there is data in the reader
+		if(DB.reader.Read())
+        {
+			// Fill in all the data
+			firstNameInputField.text = DB.reader.GetString(1);
+			lastNameInputField.text = DB.reader.GetString(2);
+			otherNameInputField.text = DB.reader.GetString(3);
+			nicknameInputField.text = DB.reader.GetString(4);
+
+			companyInputField.text = DB.reader.GetString(5);
+			departmentInputField.text = DB.reader.GetString(6);
+			jobTitleInputField.text = DB.reader.GetString(7);
+
+			dobInputField.text = DB.reader.GetString(8);
+        }
+
+		// close the DB
+		DB.CloseDB();
+
+		// Run a query to select all of the data from the 'Details' table
+		myQuery = "SELECT * FROM Details WHERE Person = " + personID + ";";
+		RunMyQuery(myQuery);
+		Debug.Log("My Query = " + myQuery);
+
+		// check that there is data in the reader and loop through the rows
+		while(DB.reader.Read())
+        {
+			// Instantiate a new Detail Panel
+			DetailPanel newDetailPanel = Instantiate(editDetailPanel, eaContent.transform);
+
+			// Set the ID and type of the new panel
+			newDetailPanel.id = DB.reader.GetInt32(0);
+			newDetailPanel.type = DB.reader.GetString(2);
+
+			// Fill in the contact to the input field
+			newDetailPanel.inputField.text = DB.reader.GetString(1);
+
+			// Position the Panel above either the Add Phone or Add Email button
+			if(newDetailPanel.type == "Phone")
+            {
+				newDetailPanel.transform.SetSiblingIndex(addPhoneButton.transform.GetSiblingIndex());
+            }
+			else if (newDetailPanel.type == "Email")
+            {
+				newDetailPanel.transform.SetSiblingIndex(addEmailButton.transform.GetSiblingIndex());
+			}
+
+			// add the new panel to the list of spawned details panels
+			spawnedDetailsPanels.Add(newDetailPanel);
+		}
+
+		// close the DB
+		DB.CloseDB();
+
+		// Run a query to select all of the data from the 'Address' table
+		myQuery = "SELECT * FROM Address WHERE Person = " + personID + ";";
+		RunMyQuery(myQuery);
+		Debug.Log("My Query = " + myQuery);
+
+		// check that there is data in the reader and loop through all the rows
+		while(DB.reader.Read())
+        {
+			// Instantiate a new address panel
+			AddressPanel newAddressPanel = Instantiate(editAddressPanel, eaContent.transform);
+
+			// set the ID of the new panel
+			newAddressPanel.id = DB.reader.GetInt32(0);
+
+			// Position the new panel above the Add Address button
+			newAddressPanel.transform.SetSiblingIndex(addAddressButton.transform.GetSiblingIndex());
+
+			// add the panel to the list of spawned address panels
+			spawnedAddressPanels.Add(newAddressPanel);
+
+			// Fill in all of the input fields with data
+			if(!string.IsNullOrWhiteSpace(DB.reader.GetString(1)))
+            {
+				newAddressPanel.street1InputField.text = DB.reader.GetString(1);
+            }
+			if (!string.IsNullOrWhiteSpace(DB.reader.GetString(2)))
+			{
+				newAddressPanel.street2InputField.text = DB.reader.GetString(2);
+			}
+			if (!string.IsNullOrWhiteSpace(DB.reader.GetString(3)))
+			{
+				newAddressPanel.suburbInputField.text = DB.reader.GetString(3);
+			}
+			if (!string.IsNullOrWhiteSpace(DB.reader.GetString(4)))
+			{
+				newAddressPanel.stateInputField.text = DB.reader.GetString(4);
+			}
+			if (!string.IsNullOrWhiteSpace(DB.reader.GetString(5)))
+			{
+				newAddressPanel.postcodeInputField.text = DB.reader.GetString(5);
+			}
+			if (!string.IsNullOrWhiteSpace(DB.reader.GetString(6)))
+			{
+				newAddressPanel.countryInputField.text = DB.reader.GetString(6);
+			}
+        }
+
+		// close the DB
+		DB.CloseDB();
     }
 
 	public void SaveButton()
@@ -346,13 +485,123 @@ public class ContactsDBManager : MonoBehaviour {
         }
 		else // Add New Contact
         {
+			// Run a query that adds a new person to the DB
+			myQuery = "INSERT INTO Person (FirstName, LastName, OtherName, Nickname, Company, Department, JobTitle, DOB) " +
+					  "VALUES ('" + firstNameInputField.text + "', '"
+								  + lastNameInputField.text + "', '" 
+								  + otherNameInputField.text + "', '" 
+								  + nicknameInputField.text + "', '" 
+								  + companyInputField.text + "', '" 
+								  + departmentInputField.text + "', '" 
+								  + jobTitleInputField.text + "', '" 
+								  + dobInputField.text + "');";
+			RunMyQuery(myQuery);
 
+			//close the DB
+			DB.CloseDB();
+
+			// check that there are any details or addresses to add to the DB
+			if(spawnedDetailsPanels.Count != 0 || spawnedAddressPanels.Count != 0)
+            {
+				// Run a query to find the ID of the newly added Person
+				myQuery = "SELECT MAX(ID) FROM Person;";
+				RunMyQuery(myQuery);
+
+				// check that there is data in the reader
+				if(DB.reader.Read())
+                {
+					// set the personID to the ID of the newly added Person
+					personID = DB.reader.GetInt32(0);
+				}
+
+				// Close the DB
+				DB.CloseDB();
+
+				// Loop through every detail panel
+				foreach(DetailPanel panel in spawnedDetailsPanels)
+                {
+					// Run a query to insert the data into the DB
+					myQuery = "INSERT INTO Details (Contact, Type, Person) " +
+							  "VALUES ('" + panel.inputField.text + "', '" + panel.type + "', " + personID + ");";
+					RunMyQuery(myQuery);
+
+					// Close the DB
+					DB.CloseDB();
+                }
+
+                // Loop through every address panel
+                foreach (AddressPanel panel in spawnedAddressPanels)
+                {
+                    // Run a query to insert the data into the DB
+                    myQuery = "INSERT INTO Address (Street1, Street2, Suburb, State, PostCode, Country, Person) " +
+                              "VALUES ('" + panel.street1InputField.text + "', '"
+                                          + panel.street2InputField.text + "', '"
+                                          + panel.suburbInputField.text + "', '"
+                                          + panel.stateInputField.text + "', '"
+                                          + panel.postcodeInputField.text + "', '"
+                                          + panel.countryInputField.text + "', "
+                                          + personID + ");";
+                    RunMyQuery(myQuery);
+
+					//Close the DB
+					DB.CloseDB();
+				}
+            }
+
+			// Go back to the main screen
+			MenuGoTo(0);
+		}
+    }
+
+	public void CancelButton()
+    {
+		if(isEditScreen)
+		{
+			MenuGoTo(1);
+		}
+		else
+        {
+			MenuGoTo(0);
         }
+    }
+
+	public void AddPhoneButton()
+    {
+		// Instatiate a new detail panel
+		DetailPanel newPanel = Instantiate(editDetailPanel, eaContent.transform);
+		// Set the type to Phone
+		newPanel.type = "Phone";
+		// Position the panel above the Add Phone Button
+		newPanel.transform.SetSiblingIndex(addPhoneButton.transform.GetSiblingIndex());
+		// Add the panel to the list of spawned Details Panels
+		spawnedDetailsPanels.Add(newPanel);
+    }
+
+	public void AddEmailButton()
+    {
+		// Instatiate a new detail panel
+		DetailPanel newPanel = Instantiate(editDetailPanel, eaContent.transform);
+		// Set the type to Email
+		newPanel.type = "Email";
+		// Position the panel above the Add Email button
+		newPanel.transform.SetSiblingIndex(addEmailButton.transform.GetSiblingIndex());
+		// Add the panel to the list of spawned Details Panels
+		spawnedDetailsPanels.Add(newPanel);
+	}
+
+	public void AddAddressButton()
+    {
+		// Instantiate a new address panel
+		AddressPanel newPanel = Instantiate(editAddressPanel, eaContent.transform);
+		// Position the panel above the Add Address Button
+		newPanel.transform.SetSiblingIndex(addAddressButton.transform.GetSiblingIndex());
+		// Add the panel to the list of spawned Address Panels
+		spawnedAddressPanels.Add(newPanel);
     }
 
 	void ClearScreenData()
     {
-		// destroy all of the panels on the main screen
+		// destroy all of the contact panels on the main screen
 		foreach(Transform panel in msContent.transform)
         {
 			Destroy(panel.gameObject);
@@ -386,8 +635,33 @@ public class ContactsDBManager : MonoBehaviour {
 			Destroy(obj);
         }
 
-		// Clear the list containing the spawned objects
+		// Clear the list containing the spawned objects on the view contact screen
 		vsSpawnedObjects.Clear();
+
+		// clear all of the input fields in the edit/add screens
+		firstNameInputField.text = "";
+		lastNameInputField.text = "";
+		otherNameInputField.text = "";
+		nicknameInputField.text = "";
+		companyInputField.text = "";
+		departmentInputField.text = "";
+		jobTitleInputField.text = "";
+		dobInputField.text = "";
+
+		// Destory all of the spawned panels on the edit/add screens
+		foreach(DetailPanel panel in spawnedDetailsPanels)
+        {
+			Destroy(panel.gameObject);
+        }
+		foreach(AddressPanel panel in spawnedAddressPanels)
+        {
+			Destroy(panel.gameObject);
+        }
+
+		spawnedDetailsPanels.Clear();
+		spawnedAddressPanels.Clear();
+		detailsToDelete.Clear();
+		addressesToDelete.Clear();
     }
 
 	void RunMyQuery(string myQuery)
