@@ -599,6 +599,26 @@ public class ContactsDBManager : MonoBehaviour {
 		spawnedAddressPanels.Add(newPanel);
     }
 
+	public void DeleteContactButton()
+    {
+		// Delete all details related to the Person
+		myQuery = "DELETE FROM Details WHERE Person = " + personID + ";";
+		RunMyQuery(myQuery);
+		Debug.Log("My Query = " + myQuery);
+
+		// Delete all addresses related to the Person
+		myQuery = "DELETE FROM Address WHERE Person = " + personID + ";";
+		RunMyQuery(myQuery);
+		Debug.Log("My Query = " + myQuery);
+
+		// Delete the Person from the DB
+		myQuery = "DELETE FROM Person WHERE ID = " + personID + ";";
+		RunMyQuery(myQuery);
+		Debug.Log("My Query = " + myQuery);
+
+		// Go back to the main screen
+		MenuGoTo(0);
+	}
 	void ClearScreenData()
     {
 		// destroy all of the contact panels on the main screen
