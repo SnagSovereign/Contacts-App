@@ -499,7 +499,7 @@ public class ContactsDBManager : MonoBehaviour {
 			if(detailPanel.id != -1) // if the data is in the DB, and needs to be UPDATED
 			{
 				// Run a query to UPDATE the detail in the DB
-				myQuery = "UPDATE Details SET Contact = '" + detailPanel.inputField.text + "' WHERE ID = " + personID + ";";
+				myQuery = "UPDATE Details SET Contact = '" + detailPanel.inputField.text + "' WHERE ID = " + detailPanel.id + ";";
 				RunMyQuery(myQuery);
 				DB.CloseDB();
 			}
@@ -509,6 +509,7 @@ public class ContactsDBManager : MonoBehaviour {
 				myQuery = "INSERT INTO Details (Contact, Type, Person) " +
 						  "VALUES ('" + detailPanel.inputField.text + "', '" + detailPanel.type + "', " + personID + ");";
 				RunMyQuery(myQuery);
+				DB.CloseDB();
 			}
 		}
 
@@ -518,20 +519,50 @@ public class ContactsDBManager : MonoBehaviour {
 			if(addressPanel.id != -1) // if the data is in the DB, and needs to be UPDATED
 			{
 				// Run a query to UPDATE the address in the DB
-				myQuery = "";
+				myQuery = "UPDATE Address SET " +
+						  "Street1 = '" + addressPanel.street1InputField.text + 
+						  "', Street2 = '" + addressPanel.street2InputField.text + 
+						  "', Suburb = '" + addressPanel.suburbInputField.text + 
+						  "', State = '" + addressPanel.stateInputField.text + 
+						  "', PostCode = '" + addressPanel.postcodeInputField.text + 
+						  "', Country = '" + addressPanel.countryInputField.text + 
+						  "' WHERE ID = " + addressPanel.id + ";";
 				RunMyQuery(myQuery);
+				DB.CloseDB();
 			}
 			else // if the data is not in the DB, and needs to be INSERTED
 			{
 				// Run a query to INSERT a new address into the DB
-				myQuery = "";
+				myQuery = "INSERT INTO Address (Street1, Street2, Suburb, State, PostCode, Country, Person) " +
+						  "VALUES ('" + addressPanel.street1InputField.text + "', '" 
+									  + addressPanel.street2InputField.text + "', '" 
+									  + addressPanel.suburbInputField.text + "', '" 
+									  + addressPanel.stateInputField.text + "', '" 
+									  + addressPanel.postcodeInputField.text + "', '" 
+									  + addressPanel.countryInputField.text + "', " 
+									  + personID + ");";
 				RunMyQuery(myQuery);
+				DB.CloseDB();
 			}
 		}
 
-		// Run a query to DELETE details from the DB
+		// Loop through all of the details that the user wants to DELETE
+		foreach(int detailID in detailsToDelete)
+        {
+			// Run a query to DELETE the detail from the DB
+			myQuery = "DELETE FROM Details WHERE ID = " + detailID + ";";
+			RunMyQuery(myQuery);
+			DB.CloseDB();
+        }
 
-		// Run a query to DELETE addresses from the DB
+		// Loop through all of the address that the user wants to DELETE
+		foreach(int addressID in addressesToDelete)
+        {
+			// Run a query to DELETE the address from the DB
+			myQuery = "DELETE FROM Address WHERE ID = " + addressID + ";";
+			RunMyQuery(myQuery);
+			DB.CloseDB();
+        }
 	}
 
 	void AddContact()
