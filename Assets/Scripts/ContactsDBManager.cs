@@ -115,10 +115,20 @@ public class ContactsDBManager : MonoBehaviour {
 			// set the personID of the contact panel
 			panel.SetPersonID(DB.reader.GetInt32(0));
 
-			// display the contact name (First name, Other name, Last name)
-			panel.contactNameText.text = DB.reader.GetString(1) + " " +
-										 DB.reader.GetString(3) + " " +
-										 DB.reader.GetString(2);
+			// display the FirstName
+			panel.contactNameText.text = DB.reader.GetString(1);
+
+			// if there is an OtherName, then display it
+			if(!string.IsNullOrWhiteSpace(DB.reader.GetString(3)))
+            {
+				panel.contactNameText.text += " " + DB.reader.GetString(3);
+            }
+
+			// if there is a LastName, then display it
+			if(!string.IsNullOrWhiteSpace(DB.reader.GetString(2)))
+            {
+				panel.contactNameText.text += " " + DB.reader.GetString(2);
+			}
 		}
 		// close the DB
 		DB.CloseDB();
