@@ -475,6 +475,65 @@ public class ContactsDBManager : MonoBehaviour {
 		DB.CloseDB();
     }
 
+	void EditContact()
+	{
+		// Run a query thats updates the 'Person' table
+		myQuery = "UPDATE Person SET " +
+				  "FirstName = '" + firstNameInputField.text + 
+				  "', LastName = '" + lastNameInputField.text + 
+				  "', OtherName = '" + otherNameInputField.text + 
+				  "', Nickname = '" + nicknameInputField.text + 
+				  "', Company = '" + companyInputField.text + 
+				  "', Department = '" + departmentInputField.text + 
+				  "', JobTitle = '" + jobTitleInputField.text + 
+				  "', DOB = '" + dobInputField.text +  
+				  "' WHERE ID = " + personID + ";";
+		RunMyQuery(myQuery);
+
+		// Close the DB
+		DB.CloseDB();
+
+		// Loop through all of the detail panels
+		foreach(DetailPanel detailPanel in spawnedDetailsPanels)
+		{
+			if(detailPanel.id != -1) // if the data is in the DB, and needs to be UPDATED
+			{
+				// Run a query to UPDATE the detail in the DB
+				myQuery = "UPDATE Details SET Contact = '" + detailPanel.inputField.text + "' WHERE ID = " + personID + ";";
+				RunMyQuery(myQuery);
+				DB.CloseDB();
+			}
+			else // if the data is not in the DB, and needs to be INSERTED
+			{
+				// Run a query to INSERT a new detail into the DB
+				myQuery = "INSERT INTO Details (Contact, Type, Person) " +
+						  "VALUES ('" + detailPanel.inputField.text + "', '" + detailPanel.type + "', " + personID + ");";
+				RunMyQuery(myQuery);
+			}
+		}
+
+		// Loop through all of the address panels
+		foreach(AddressPanel addressPanel in spawnedAddressPanels)
+		{
+			if(addressPanel.id != -1) // if the data is in the DB, and needs to be UPDATED
+			{
+				// Run a query to UPDATE the address in the DB
+				myQuery = "";
+				RunMyQuery(myQuery);
+			}
+			else // if the data is not in the DB, and needs to be INSERTED
+			{
+				// Run a query to INSERT a new address into the DB
+				myQuery = "";
+				RunMyQuery(myQuery);
+			}
+		}
+
+		// Run a query to DELETE details from the DB
+
+		// Run a query to DELETE addresses from the DB
+	}
+
 	void AddContact()
     {
 		// Run a query that adds a new person to the DB
@@ -535,9 +594,6 @@ public class ContactsDBManager : MonoBehaviour {
 			//Close the DB
 			DB.CloseDB();
 		}
-
-		// View the new contact
-		MenuGoTo(1);
 	}
 
 	public void SaveButton()
@@ -546,13 +602,16 @@ public class ContactsDBManager : MonoBehaviour {
 
 		if(isEditScreen) // Edit Contact Details
         {
-			
+			EditContact();
         }
 		else // Add New Contact
         {
 			AddContact();
 		}
-    }
+
+		// View the contact
+		MenuGoTo(1);
+	}
 
 	public void CancelButton()
     {
