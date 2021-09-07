@@ -61,6 +61,7 @@ public class ContactsDBManager : MonoBehaviour {
 	[SerializeField] TMP_InputField jobTitleInputField;
 	[SerializeField] TMP_InputField dobInputField;
 	[SerializeField] GameObject deleteContactButton;
+	[SerializeField] GameObject confirmationOverlay;
 
 	// list containing all of the spawned Details panels on the edit/add screen (ea)
 	[HideInInspector]
@@ -700,7 +701,7 @@ public class ContactsDBManager : MonoBehaviour {
 		spawnedAddressPanels.Add(newPanel);
     }
 
-	public void DeleteContactButton()
+	public void DeleteContact()
     {
 		// Delete all details related to the Person
 		myQuery = "DELETE FROM Details WHERE Person = " + personID + ";";
@@ -780,10 +781,21 @@ public class ContactsDBManager : MonoBehaviour {
 			Destroy(panel.gameObject);
         }
 
+		// clear the lists containing the spawned detail and address panels
 		spawnedDetailsPanels.Clear();
 		spawnedAddressPanels.Clear();
+
+		// clear the lists containing ID's to delete
 		detailsToDelete.Clear();
 		addressesToDelete.Clear();
+
+		// disable the Confirmation Overlay
+		confirmationOverlay.SetActive(false);
+    }
+
+	public void SwitchConfirmationOverlay()
+    {
+		confirmationOverlay.SetActive(!confirmationOverlay.activeSelf);
     }
 
 	void RunMyQuery(string myQuery)
