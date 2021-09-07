@@ -638,16 +638,112 @@ public class ContactsDBManager : MonoBehaviour {
 		}
 	}
 
+	bool InputIsValid()
+    {
+		// if the first name input field is blank
+		if(string.IsNullOrWhiteSpace(firstNameInputField.text))
+        {
+			// Notify the user
+			Debug.LogError("First name is a required field.");
+			return false;
+        }
+
+		// temp list of details panels to be removed after the foreach loop
+		List<DetailPanel> tempDetails = new List<DetailPanel>();
+
+        // loop through all of the detail panels
+        foreach (DetailPanel panel in spawnedDetailsPanels)
+        {
+            // if the detail panel is empty then it can be assumed that the user
+            // doesn't want that data in the DB
+            if (string.IsNullOrWhiteSpace(panel.inputField.text))
+            {
+                // If the detail panel contained data from the DB
+                if (panel.id != -1)
+                {
+                    // add the id to the list of details to delete
+                    detailsToDelete.Add(panel.id);
+                }
+
+				// Add this panel to the temp list containing details panels to be deleted
+				tempDetails.Add(panel);
+
+                // Destroy the panel
+                Destroy(panel.gameObject);
+            }
+            else if (panel.type == "Phone") // If the detail panel is not empty and it is a Phone
+            {
+                // If the phone number contains anything other than numbers
+
+                // loop through every character in the phone number
+                foreach (char character in panel.inputField.text)
+                {
+                    // if the character is not a digit
+                    if (character < '0' || character > '9')
+                    {
+                        //Notify the user
+                        Debug.LogError("Phone numbers can only contain digits.");
+                        return false;
+                    }
+                }
+            }
+        }
+
+		// Remove any details in the temp list
+		foreach(DetailPanel panel in tempDetails)
+        {
+			spawnedDetailsPanels.Remove(panel);
+        }
+
+		// temp list of details panels to be removed after the foreach loop
+		List<AddressPanel> tempAddresses = new List<AddressPanel>();
+
+		// loop through all of the address panels
+		foreach (AddressPanel panel in spawnedAddressPanels)
+        {
+            // if none of the address fields have anything in them
+            if (string.IsNullOrWhiteSpace(panel.street1InputField.text)
+            && string.IsNullOrWhiteSpace(panel.street2InputField.text)
+            && string.IsNullOrWhiteSpace(panel.suburbInputField.text)
+            && string.IsNullOrWhiteSpace(panel.stateInputField.text)
+            && string.IsNullOrWhiteSpace(panel.postcodeInputField.text)
+            && string.IsNullOrWhiteSpace(panel.countryInputField.text))
+            {
+				if(panel.id != -1) // if the address panel did contain data from the DB
+                {
+					// add the id to the list of addresses to delete
+					addressesToDelete.Add(panel.id);
+                }
+
+				// Add this panel to the temp list containing address panels to be deleted
+				tempAddresses.Add(panel);
+
+				// Destroy the panel
+				Destroy(panel.gameObject);
+			}
+        }
+
+		// Remove any addresses in the temp list
+		foreach(AddressPanel panel in tempAddresses)
+        {
+			spawnedAddressPanels.Remove(panel);
+        }
+
+        // if the users data has passed all of the validation checks, then return true
+        return true;
+    }
+
 	public void SaveButton()
     {
-		// Validate the data
+		// if the user has input invalid data, then exit this method
+		if(!InputIsValid()) { return; }
 
-		if(isEditScreen) // Edit Contact Details
-        {
+		if (isEditScreen) // Edit Contact Details
+		{
 			EditContact();
-        }
+		}
 		else // Add New Contact
-        {
+		{
 			AddContact();
 		}
 
