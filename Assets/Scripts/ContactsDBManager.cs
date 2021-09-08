@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
@@ -61,7 +62,11 @@ public class ContactsDBManager : MonoBehaviour {
 	[SerializeField] TMP_InputField jobTitleInputField;
 	[SerializeField] TMP_InputField dobInputField;
 	[SerializeField] GameObject deleteContactButton;
-	[SerializeField] GameObject confirmationOverlay;
+
+	[Header("Message Objects")]
+	[SerializeField] GameObject darkOverlay;
+	[SerializeField] TextMeshProUGUI messageText;
+	[SerializeField] GameObject okButton;
 
 	// list containing all of the spawned Details panels on the edit/add screen (ea)
 	[HideInInspector]
@@ -644,7 +649,8 @@ public class ContactsDBManager : MonoBehaviour {
 		if(string.IsNullOrWhiteSpace(firstNameInputField.text))
         {
 			// Notify the user
-			Debug.LogError("First name is a required field.");
+			messageText.text = "First name is a required field";
+			SwitchDarkOverlay();
 			return false;
         }
 
@@ -681,8 +687,9 @@ public class ContactsDBManager : MonoBehaviour {
                     // if the character is not a digit
                     if (character < '0' || character > '9')
                     {
-                        //Notify the user
-                        Debug.LogError("Phone numbers can only contain digits.");
+						//Notify the user
+						messageText.text = "Phone numbers can only contain digits";
+						SwitchDarkOverlay();
                         return false;
                     }
                 }
@@ -721,12 +728,41 @@ public class ContactsDBManager : MonoBehaviour {
 				// Destroy the panel
 				Destroy(panel.gameObject);
 			}
+			else if (!string.IsNullOrWhiteSpace(panel.postcodeInputField.text)) // if the postcode is not empty
+            {
+				// The Postcode is first validated via rules set on the InputField
+				// that only allow alphanumeric characters, and a max of 10 characters
+
+				// Validate the postcode further by changing any letters to Upper Case
+				panel.postcodeInputField.text = panel.postcodeInputField.text.ToUpper();
+            }
         }
 
 		// Remove any addresses in the temp list
 		foreach(AddressPanel panel in tempAddresses)
         {
 			spawnedAddressPanels.Remove(panel);
+        }
+
+		// If the DOB is not empty
+		if(!string.IsNullOrWhiteSpace(dobInputField.text))
+		{
+			// Stores the DateTime of the DOB if the date can be parsed
+			DateTime parsedDate;
+
+			// if the DOB the user has input can be parsed to a DateTime
+			if(DateTime.TryParse(dobInputField.text, out parsedDate))
+            {
+				// Set the DOB to the Date of the parsedDate
+				dobInputField.text = parsedDate.ToShortDateString();
+            }
+			else // if the date is invalid
+            {
+				// Notify the user
+				messageText.text = "DOB must follow the format: dd/mm/yyy";
+				SwitchDarkOverlay();
+				return false;
+            }
         }
 
         // if the users data has passed all of the validation checks, then return true
@@ -886,12 +922,23 @@ public class ContactsDBManager : MonoBehaviour {
 		addressesToDelete.Clear();
 
 		// disable the Confirmation Overlay
-		confirmationOverlay.SetActive(false);
+		darkOverlay.SetActive(false);
+
+		// enable the OK button
+		okButton.SetActive(true);
     }
 
-	public void SwitchConfirmationOverlay()
+	public void DeleteContactButton()
     {
-		confirmationOverlay.SetActive(!confirmationOverlay.activeSelf);
+		messageText.text = "Are you sure you want to delete this contact?";
+		SwitchDarkOverlay();
+		okButton.SetActive(false);
+    }
+
+	public void SwitchDarkOverlay()
+    {
+		darkOverlay.SetActive(!darkOverlay.activeSelf);
+		okButton.SetActive(true);
     }
 
 	void RunMyQuery(string myQuery)
