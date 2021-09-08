@@ -763,7 +763,7 @@ public class ContactsDBManager : MonoBehaviour {
 			else // if the date is invalid
             {
 				// Notify the user
-				messageText.text = "DOB must follow the format: dd/mm/yyy";
+				messageText.text = "DOB must follow the format: dd/mm/yyyy";
 				SwitchDarkOverlay();
 				return false;
             }
