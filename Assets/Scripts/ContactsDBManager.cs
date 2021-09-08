@@ -427,10 +427,16 @@ public class ContactsDBManager : MonoBehaviour {
 			if(newDetailPanel.type == "Phone")
             {
 				newDetailPanel.transform.SetSiblingIndex(addPhoneButton.transform.GetSiblingIndex());
+				// Set the placeholder to 'phone number'
+				newDetailPanel.placeholder.text = "phone number";
             }
 			else if (newDetailPanel.type == "Email")
             {
 				newDetailPanel.transform.SetSiblingIndex(addEmailButton.transform.GetSiblingIndex());
+				// Set the font size to 45
+				newDetailPanel.inputField.textComponent.fontSize = 45f;
+				// Set the placeholder to 'email address'
+				newDetailPanel.placeholder.text = "email address";
 			}
 
 			// add the new panel to the list of spawned details panels
@@ -679,8 +685,6 @@ public class ContactsDBManager : MonoBehaviour {
             }
             else if (panel.type == "Phone") // If the detail panel is not empty and it is a Phone
             {
-                // If the phone number contains anything other than numbers
-
                 // loop through every character in the phone number
                 foreach (char character in panel.inputField.text)
                 {
@@ -809,6 +813,8 @@ public class ContactsDBManager : MonoBehaviour {
 		newPanel.transform.SetSiblingIndex(addPhoneButton.transform.GetSiblingIndex());
 		// Add the panel to the list of spawned Details Panels
 		spawnedDetailsPanels.Add(newPanel);
+		// Set the placeholder to 'phone number'
+		newPanel.placeholder.text = "phone number";
     }
 
 	public void AddEmailButton()
@@ -821,6 +827,10 @@ public class ContactsDBManager : MonoBehaviour {
 		newPanel.transform.SetSiblingIndex(addEmailButton.transform.GetSiblingIndex());
 		// Add the panel to the list of spawned Details Panels
 		spawnedDetailsPanels.Add(newPanel);
+		// Set the font size to 45
+		newPanel.inputField.textComponent.fontSize = 45f;
+		// Set the placeholder to 'email address'
+		newPanel.placeholder.text = "email address";
 	}
 
 	public void AddAddressButton()

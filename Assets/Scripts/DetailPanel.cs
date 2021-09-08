@@ -6,6 +6,7 @@ using TMPro;
 public class DetailPanel : MonoBehaviour {
 
     public TMP_InputField inputField;
+    public TextMeshProUGUI placeholder;
 
     // stores the Detail ID
     [HideInInspector]

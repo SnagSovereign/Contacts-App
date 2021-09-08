@@ -600,6 +600,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inputField: {fileID: 114816906761903290}
+  placeholder: {fileID: 114648460392106992}
   id: -1
   type: 
 --- !u!114 &114816906761903290
